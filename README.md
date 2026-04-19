@@ -5,7 +5,6 @@ a  simple splash screen for your terminal
 <img src="images/Preview.png">
 
 # A Huge Thanks To
-  all contributions
-  and users to 
+  all contribution , and users too
 
   yall make my day!
