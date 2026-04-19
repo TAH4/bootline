@@ -1,0 +1,87 @@
+#!/usr/bin/env python3
+
+import psutil
+import socket
+from Effect import Typewriter
+import os
+import re
+
+# GLOBAL
+DELAY = 0.01
+YELLOW = "\033[93m"
+RESET_COLOR = "\033[0m"
+typewriter = Typewriter()
+
+
+typewriter.tprint()  # this will print an ascii art located <the_dir_where_this_file_was_executed>/art.txt
+
+
+# to disable random colors
+typewriter = Typewriter(False)
+
+
+def get_root_filesys() -> str:
+    match os.name:
+        case "nt":
+            return "C:/"
+        case "posix":
+            return "/"
+        case _:
+            return "/"
+
+
+def is_online() -> str:
+    try:
+        socket.create_connection(("8.8.8.8", 53), timeout=2)
+        return "yes"
+    except OSError:
+        return "no"
+    except Exception as e:
+        return f"I Think I started a Beef With the Socket API ? [Err-Msg : {e}]"
+
+
+# -------------------------
+# BOX FIX (NO LEN HACKING)
+# -------------------------
+
+
+def strip_ansi(text: str) -> str:
+    return re.sub(r"\033\[[0-9;]*m", "", text)
+
+
+def box_line(text: str, width: int) -> str:
+    real_len = len(strip_ansi(text))
+
+    if real_len > width:
+        text = text[:width]
+        real_len = width
+
+    return "│" + text + (" " * (width - real_len)) + "│"
+
+
+def print_box(title: str, lines: list[str], width: int = 50):
+    print("┌" + ("─" * width) + "┐")
+    print(box_line(title, width))
+    print("├" + ("─" * width) + "┤")
+
+    for line in lines:
+        print(box_line(line, width))
+
+    print("└" + ("─" * width) + "┘")
+
+
+# logic
+cpu_usage = psutil.cpu_percent()
+ram_usage = psutil.virtual_memory().percent
+disk_usage = psutil.disk_usage(get_root_filesys()).percent
+
+
+lines = [
+    f"[#] cpu-usage : {YELLOW}{cpu_usage}{RESET_COLOR} %",
+    f"[#] ram-usage : {YELLOW}{ram_usage}{RESET_COLOR} %",
+    f"[#] disk-usage : {YELLOW}{disk_usage}{RESET_COLOR} %",
+    f"[#] connected-to-internet  : {YELLOW}{is_online()}{RESET_COLOR}",
+]
+
+
+print_box(" system status", lines)
